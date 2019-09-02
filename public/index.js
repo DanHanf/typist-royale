@@ -11,6 +11,7 @@ $(function(){
    '#58dc00', '#287b00', '#a8f07a', '#4ae8c4',
    '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
    ];
+   var eliminated = false;
 
   // Initialize Variables
   var $window = $(window);
@@ -49,7 +50,7 @@ $(function(){
   }
 
   function sendLetter(key) {
-    key = cleanInput($inputMessage.val());
+    //key = cleanInput($inputMessage.val());
     $inputMessage.val('');
     //console.log('key = '+key)
     if(key === 'Meta' || key === '') {
@@ -57,64 +58,10 @@ $(function(){
       //return
     }
     else {
-      console.log(key);
+      //console.log(key);
       socket.emit('typed letter', {key:key, cursorIndex:cursorIndex, wordLength:wordLength})
     }
   }
-
-  // adds visual chat message to message list
-
-  // adds a message element to the message and scrolls to the bottom
-  // el - the element to add as a message
-  // options.fade - if an element should fade in (default true)
-  // options.prepend - if the element should prepend all other messages (default false)
-  function addMessageElement(el, options) {
-    var $el = $(el);
-    console.log($el)
-    if (!options) {
-      options = {};
-    }
-    if(typeof options.fade === 'undefined') {
-      options.fade = true;
-    }
-    if(typeof options.prepend === 'undefined') {
-      options.prepend = false;
-    }
-    if(options.fade) {
-      $el.hide().fadeIn(FADE_TIME);
-    }
-    if(options.prepend) {
-      $messages.prepend($el);
-    } else {
-      $messages.append($el);
-    }
-    $messages[0].scrollTop = $messages[0].scrollHeight;
-  }
-
-  // prevents input from having injected markup
-  function cleanInput(input) {
-    return $('<div/>').text(input).text();
-  }
-
-  // updates typing event
-  function updateTyping() {
-    if (connected) {
-      if(!typing) {
-        typing = true;
-        socket.emit('typing');
-      }
-      lastTypingTime = (new Date()).getTime();
-      setTimeout(function() {
-        var typingTimer = (new Date()).getTime();
-        var timeDiff = typingTimer - lastTypingTime;
-        if (timeDiff >= TYPING_TIMER_LENGTH && typing) {
-          socket.emit('stop typing');
-          typing = false;
-        }
-      }, TYPING_TIMER_LENGTH);
-    }
-  }
-
 
   // keyboard events
   $window.keydown(function(event) {
@@ -127,7 +74,9 @@ $(function(){
       return
     }
     // typing & sending letters
-    sendLetter(event.key)
+    if(!eliminated) {
+      sendLetter(event.key)
+    }
   });
   // click ready button
   $('.buttonReady').click(function() {
@@ -137,10 +86,6 @@ $(function(){
       $readyPage.off('click');
       //socket.emit('look for room')
     })
-
-  $inputMessage.on('input', function() {
-    updateTyping();
-  });
 
   // click events
   // focus input when clicking anyhere on the login page
@@ -174,6 +119,9 @@ $(function(){
     //console.log('incorrect! '+word, word[letterIndex])
     //var letterIndex = (word.length - wordLength)
     $('.'+cursorIndex).addClass('red')
+    $('.inputMessage').attr('readonly', 'readonly').prop('placeholder','You Have Been Eliminated')
+    sendLetter('')
+    eliminated = true;
   });
 
   socket.on('correct letter', function() {

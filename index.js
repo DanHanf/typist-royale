@@ -55,7 +55,7 @@ io.on('connection', function (socket) {
     if (letter === word[0]) {
       word = word.slice(1)
       io.emit('correct letter')
-      console.log(cursorIndex, wordLength)
+      //console.log(cursorIndex, wordLength)
       if (cursorIndex === (wordLength-1)) {
         word = getRandomWord();
         resetWord()
@@ -87,6 +87,17 @@ function getRandomWord() {
   var randomWord = words[Math.floor(Math.random()*words.length)];
   return randomWord
 }
+
+/* 
+function wordList (n) {
+  var words = []
+  for (var i = 0; i < n; i++) {
+    var word = words[Math.round(Math.random() * words.length)]
+    words.push(word)
+  }
+  return words
+}
+*/
 
 function resetWord() {
   io.emit('new word', word)
