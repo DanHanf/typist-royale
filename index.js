@@ -67,21 +67,6 @@ io.on('connection', function (socket) {
   })
 })
 
-function createNewGameRoom() {
-  var thisGameRoomId = (Math.random()*1000) | 0;
-  this.emit('newGameRoomCreated', {
-    gameRoomId: thisGameRoomId,
-    mySocketId: this.id
-  });
-  rooms.push(thisGameRoomId)
-  this.join(thisGameRoomId.toString())
-}
-
-function joinRoom(gameRoomId) {
-  this.join(gameRoomId.toString())
-  gameRoomId.numPlayers++
-  console.log(gameRoomId)
-}
 
 function getRandomWord() {
   var randomWord = words[Math.floor(Math.random()*words.length)];

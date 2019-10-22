@@ -113,8 +113,9 @@ ul {
 /* Messages */
 
 .chatArea {
+  margin: auto;
   height: 100%;
-  padding-bottom: 60px;
+/*  padding-bottom: 60px;*/
 }
 
 .wordItem .list-item {

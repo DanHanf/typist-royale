@@ -11,7 +11,7 @@ $(function(){
    '#58dc00', '#287b00', '#a8f07a', '#4ae8c4',
    '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
    ];
-   var eliminated = false;
+   var eliminated;
 
   // Initialize Variables
   var $window = $(window);
@@ -23,7 +23,7 @@ $(function(){
   var $chatPage = $('.chat.page'); // chat page
 
   // set a username!
-  var username;
+  var playerUsername// = $('.nickname').val();
   var connected = false;
   var typing = false;
   var lastTypingTime;
@@ -74,16 +74,22 @@ $(function(){
       return
     }
     // typing & sending letters
-    if(!eliminated) {
+    if(!eliminated && document.activeElement === $('.inputMessage')[0]) {
       sendLetter(event.key)
+      //console.log(username)
+      console.log(playerUsername)
     }
   });
   // click ready button
   $('.buttonReady').click(function() {
       //console.log('click')
+      playerUsername = $('.nickname').val();
       $readyPage.fadeOut();
       $chatPage.show();
       $readyPage.off('click');
+      eliminated = false;
+      $('.inputMessage').prop('readonly', false).prop('placeholder','');
+      $('.playerUsername').append('hello, '+playerUsername);
       //socket.emit('look for room')
     })
 
@@ -119,7 +125,7 @@ $(function(){
     //console.log('incorrect! '+word, word[letterIndex])
     //var letterIndex = (word.length - wordLength)
     $('.'+cursorIndex).addClass('red')
-    $('.inputMessage').attr('readonly', 'readonly').prop('placeholder','You Have Been Eliminated')
+    $('.inputMessage').prop('readonly', true).prop('placeholder','You Have Been Eliminated')
     sendLetter('')
     eliminated = true;
   });
