@@ -23,7 +23,7 @@ $(function(){
   var $chatPage = $('.chat.page'); // chat page
 
   // set a username!
-  var playerUsername// = $('.nickname').val();
+  var name
   var connected = false;
   var typing = false;
   var lastTypingTime;
@@ -31,35 +31,14 @@ $(function(){
 
   var socket = io();
 
-  function addParticipantsMessage(data) {
-    var message = '';
-    if (data.numUsers === 1) {
-      message += 'there is 1 participant';
-    }
-    else {
-      message += 'there are ' + data.numUsers + ' participants';
-    }
-    log(message);
-  }
-
-  // log message
-  function log (message, options) {
-    console.log(message)
-    var $el = $('<li>').addClass('log').text(message);
-    addMessageElement($el, options);
-  }
-
   function sendLetter(key) {
-    //key = cleanInput($inputMessage.val());
     $inputMessage.val('');
-    //console.log('key = '+key)
     if(key === 'Meta' || key === '') {
       console.log('meta')
-      //return
     }
     else {
-      //console.log(key);
-      socket.emit('typed letter', {key:key, cursorIndex:cursorIndex, wordLength:wordLength})
+      console.log(key);
+      //socket.emit('typed letter', {key:key, cursorIndex:cursorIndex, wordLength:wordLength})
     }
   }
 
@@ -76,21 +55,18 @@ $(function(){
     // typing & sending letters
     if(!eliminated && document.activeElement === $('.inputMessage')[0]) {
       sendLetter(event.key)
-      //console.log(username)
-      console.log(playerUsername)
     }
   });
   // click ready button
   $('.buttonReady').click(function() {
-      //console.log('click')
-      playerUsername = $('.nickname').val();
+      name = $('.nickname').val();
       $readyPage.fadeOut();
       $chatPage.show();
       $readyPage.off('click');
       eliminated = false;
       $('.inputMessage').prop('readonly', false).prop('placeholder','');
-      $('.playerUsername').append('hello, '+playerUsername);
-      //socket.emit('look for room')
+      $('.playerUsername').append('hello, '+ name);
+      socket.emit("join", {name: name})
     })
 
   // click events
@@ -106,7 +82,7 @@ $(function(){
 
   // socket events
 
-  // reviece new word
+  // recieve new word
   socket.on('new word', function(data) {
     wordLength = data.length;
     $('.wordItem').text('')

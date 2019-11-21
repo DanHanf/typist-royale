@@ -4,13 +4,18 @@
   "description": "a battle royale typing game for fools",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "prettier --write *.js ./public/index.js"
   },
   "author": "dan hanf",
   "license": "MIT",
   "dependencies": {
+    "chance": "^1.1.3",
     "express": "^4.16.4",
     "pug": "^2.0.3",
     "socket.io": "^2.2.0"
+  },
+  "devDependencies": {
+    "prettier": "^1.19.1"
   }
 }
