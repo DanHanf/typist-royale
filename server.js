@@ -4,7 +4,6 @@ const app = express();
 const port = 3000;
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
-const games = [];
 const Chance = require("chance");
 
 // CONSTANTS
@@ -12,6 +11,9 @@ const Chance = require("chance");
 const MAXPLAYERS = 100;
 const DELTA = 200;
 const chance = new Chance();
+
+// STATE
+const games = [];
 
 // ASSETS
 
@@ -30,22 +32,24 @@ server.listen(port, () => console.log(`now listening on port ${port}!`));
 io.on("connection", socket => {
   // subscribe to messages
 
-// Join a server
+  // join a server
   socket.on("join", message => {
-   // are there games available?
+    // are there games available?
     var available = games.filter(game => {
-      return game.players.length < MAXPLAYERS - 1;
+      return game.players.length < MAXPLAYERS - 1 && game.started === false;
     });
 
     if (available.length === 0) {
       // create a game
       var game = {
+        id: games.length + 1,
         players: [],
         eliminated: 0,
-        wordList: wordList(500),
+        wordList: wordList(50),
         lobbyCountdown: 30000, // go longer if rooms are too small
         gameTimer: 0,
-        wordTime: 10000
+        wordTime: 10000,
+        started: false
       };
 
       games.push(game);
@@ -57,19 +61,35 @@ io.on("connection", socket => {
 
     var player = {
       name: message.name,
-      current: 0,  // current word index
-      game: game
+      current: 0, // current word index
+      gameId: game.id,
+      eliminated: false
     };
 
     game.players.push(player);
     player.id = game.players.length - 1;
+
+    // join game socket room
+    socket.join(game.id, () => {
+      io.to(game.id).emit(game);
+    });
+  });
+
+  // player failed
+  socket.on("fail", player => {
+    games[player.gameId].eliminated++;
+    games[player.gameId].players[player.id].eliminated = true;
+  });
+
+  // player next
+  socket.on("next", player => {
+    games[player.gameId].players[player.id].current++;
   });
 
   socket.on("disconnect", socket => {
     //game.players.splice(player.id, 1);
-   console.log('player disconnected')
+    console.log("player disconnected");
   });
-
 });
 
 // GAME LOOP
@@ -77,8 +97,14 @@ io.on("connection", socket => {
 setInterval(() => {
   for (let game of games) {
     // update game
-
     if (game.players.length >= MAXPLAYERS || game.lobbyCountdown <= 0) {
+      // start game
+      if (game.started === false) {
+        game.started = true;
+
+        io.to(game.id).emit("start", game);
+      }
+
       game.gameTimer += DELTA;
 
       if (game.eliminated >= game.players.length - 1) {
@@ -87,11 +113,14 @@ setInterval(() => {
         // update players
 
         for (let player of game.players) {
+          // update player
         }
       }
     } else {
       game.lobbyCountdown -= DELTA;
     }
+
+    io.to(game.id).emit(game);
   }
 }, DELTA);
 
@@ -100,7 +129,9 @@ setInterval(() => {
 function wordList(n) {
   var words = [];
   for (var i = 0; i < n; i++) {
-    words.push(dictionary[chance.integer(0, dictionary.length - 1)]);
+    words.push(
+      dictionary[chance.integer({ min: 0, max: dictionary.length - 1 })]
+    );
   }
   return words;
 }
