@@ -1,18 +1,19 @@
 const dictionary = require("./words.json");
 const express = require("express");
 const app = express();
-const port = 3000;
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 const Chance = require("chance");
 
 // CONSTANTS
 
+const PORT = 3000;
 const MAXPLAYERS = 100;
 const DELTA = 200;
 const chance = new Chance();
 
 // STATE
+
 const games = [];
 
 // ASSETS
@@ -25,7 +26,7 @@ app.get("/", function(req, res) {
     message: "welcome to typist royale!"
   });
 });
-server.listen(port, () => console.log(`now listening on port ${port}!`));
+server.listen(PORT, () => console.log(`now listening on port ${port}!`));
 
 // USER CONNECTIONS
 
@@ -35,13 +36,13 @@ io.on("connection", socket => {
   // join a server
   socket.on("join", message => {
     // are there games available?
-    var available = games.filter(game => {
+    let available = games.filter(game => {
       return game.players.length < MAXPLAYERS - 1 && game.started === false;
     });
 
     if (available.length === 0) {
       // create a game
-      var game = {
+      let game = {
         id: games.length + 1,
         players: [],
         eliminated: 0,
@@ -57,9 +58,9 @@ io.on("connection", socket => {
     }
 
     // join a game
-    var game = available[0];
+    let game = available[0];
 
-    var player = {
+    let player = {
       name: message.name,
       current: 0, // current word index
       gameId: game.id,
@@ -127,8 +128,8 @@ setInterval(() => {
 // UTILITY
 
 function wordList(n) {
-  var words = [];
-  for (var i = 0; i < n; i++) {
+  let words = [];
+  for (let i = 0; i < n; i++) {
     words.push(
       dictionary[chance.integer({ min: 0, max: dictionary.length - 1 })]
     );
