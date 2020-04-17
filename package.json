@@ -4,7 +4,7 @@
   "description": "a battle royale typing game for fools",
   "main": "server.js",
   "scripts": {
-    "lint": "prettier --write *.js ./public/index.js"
+    "lint": "prettier --write *.js ./public/index.js ./views/index.html"
   },
   "author": "dan hanf",
   "license": "MIT",

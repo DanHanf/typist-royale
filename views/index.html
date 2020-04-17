@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Typist Royale</title>
+    <script src='https://code.jquery.com/jquery-2.2.2.min.js' />
+    <script src='/socket.io/socket.io.js' />
+    <script src='./public/index.js' />
+    <link rel='stylesheet' href='./public/style.css' />
+  </head>
+
+  <body>
+    <div class="main">
+      <div class="startscreen">
+        <input class="username" placeholder="Name?" type="text" />
+        <button class="buttonReady">Ready!</button>
+      </div>
+
+      <div class="game">
+        <div class="preGameCountdown" hidden></div>
+        <div class="wordTimer" hidden></div>
+        <div class="currentWord" hidden></div>
+        <div class="preGameChat" hidden></div>
+        <div class="opponents" hidden></div>
+        <div class="input"></div>
+        <div class="loseScreen" hidden></div>
+        <div class="winScreen" hidden></div>
+      </div>
+    </div>
+  </body>
+
+</html>

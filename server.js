@@ -26,7 +26,7 @@ app.get("/", function(req, res) {
     message: "welcome to typist royale!"
   });
 });
-server.listen(PORT, () => console.log(`now listening on port ${port}!`));
+server.listen(PORT, () => console.log(`now listening on port ${PORT}!`));
 
 // USER CONNECTIONS
 
