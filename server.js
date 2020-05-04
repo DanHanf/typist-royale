@@ -19,7 +19,6 @@ const games = [];
 // ASSETS
 
 app.use("/public", express.static("public"));
-app.set("view engine", "pug");
 app.get("/", function(req, res) {
   res.render("index", {
     title: "typist royale",
