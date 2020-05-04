@@ -48,3 +48,4 @@ $(function() {
     $(".playerUsername").append("hello, " + name);
     socket.emit("join", { name: name });
   });
+});

@@ -1,9 +1,10 @@
-const dictionary = require("./words.json");
+const path = require("path");
 const express = require("express");
 const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 const Chance = require("chance");
+const dictionary = require("./words.json");
 
 // CONSTANTS
 
@@ -14,18 +15,13 @@ const chance = new Chance();
 
 // STATE
 
-const games = [];
+const lobbies = [];
 
 // ASSETS
 
-app.use("/public", express.static("public"));
-app.get("/", function(req, res) {
-  res.render("index", {
-    title: "typist royale",
-    message: "welcome to typist royale!"
-  });
-});
-server.listen(PORT, () => console.log(`now listening on port ${PORT}!`));
+app.use("/", express.static(path.join(__dirname, "./public")));
+
+server.listen(PORT, () => console.log(`listening on ${PORT}!`));
 
 // USER CONNECTIONS
 
@@ -34,93 +30,93 @@ io.on("connection", socket => {
 
   // join a server
   socket.on("join", message => {
-    // are there games available?
-    let available = games.filter(game => {
-      return game.players.length < MAXPLAYERS - 1 && game.started === false;
+    // are there lobbies available?
+    let available = lobbies.filter(lobby => {
+      return lobby.players.length < MAXPLAYERS - 1 && lobby.started === false;
     });
 
     if (available.length === 0) {
-      // create a game
-      let game = {
-        id: games.length + 1,
+      // create a lobby
+      let lobby = {
+        id: lobbies.length + 1,
         players: [],
         eliminated: 0,
         wordList: wordList(50),
         lobbyCountdown: 30000, // go longer if rooms are too small
-        gameTimer: 0,
+        lobbyTimer: 0,
         wordTime: 10000,
         started: false
       };
 
-      games.push(game);
-      available.push(game);
+      lobbies.push(lobby);
+      available.push(lobby);
     }
 
-    // join a game
-    let game = available[0];
+    // join a lobby
+    let lobby = available[0];
 
     let player = {
       name: message.name,
       current: 0, // current word index
-      gameId: game.id,
+      lobbyId: lobby.id,
       eliminated: false
     };
 
-    game.players.push(player);
-    player.id = game.players.length - 1;
+    lobby.players.push(player);
+    player.id = lobby.players.length - 1;
 
-    // join game socket room
-    socket.join(game.id, () => {
-      io.to(game.id).emit(game);
+    // join lobby socket room
+    socket.join(lobby.id, () => {
+      io.to(lobby.id).emit(lobby);
     });
   });
 
   // player failed
   socket.on("fail", player => {
-    games[player.gameId].eliminated++;
-    games[player.gameId].players[player.id].eliminated = true;
+    lobbies[player.lobbyId].eliminated++;
+    lobbies[player.lobbyId].players[player.id].eliminated = true;
   });
 
   // player next
   socket.on("next", player => {
-    games[player.gameId].players[player.id].current++;
+    lobbies[player.lobbyId].players[player.id].current++;
   });
 
   socket.on("disconnect", socket => {
-    //game.players.splice(player.id, 1);
+    //lobby.players.splice(player.id, 1);
     console.log("player disconnected");
   });
 });
 
-// GAME LOOP
+// lobby LOOP
 
 setInterval(() => {
-  for (let game of games) {
-    // update game
-    if (game.players.length >= MAXPLAYERS || game.lobbyCountdown <= 0) {
-      // start game
-      if (game.started === false) {
-        game.started = true;
+  for (let lobby of lobbies) {
+    // update lobby
+    if (lobby.players.length >= MAXPLAYERS || lobby.lobbyCountdown <= 0) {
+      // start lobby
+      if (lobby.started === false) {
+        lobby.started = true;
 
-        io.to(game.id).emit("start", game);
+        io.to(lobby.id).emit("start", lobby);
       }
 
-      game.gameTimer += DELTA;
+      lobby.lobbyTimer += DELTA;
 
-      if (game.eliminated >= game.players.length - 1) {
-        // game over
+      if (lobby.eliminated >= lobby.players.length - 1) {
+        // lobby over
       } else {
         // update players
 
-        for (let player of game.players) {
+        for (let player of lobby.players) {
           // update player
         }
       }
     } else {
-      game.lobbyCountdown -= DELTA;
+      lobby.lobbyCountdown -= DELTA;
     }
 
-    io.to(game.id).emit(game);
+    io.to(lobby.id).emit(lobby);
   }
 }, DELTA);
 
