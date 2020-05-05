@@ -10,7 +10,7 @@ const dictionary = require("./words.json");
 
 const PORT = 3000;
 const MAXPLAYERS = 100;
-const DELTA = 200;
+const DELTA = 500;
 const chance = new Chance();
 
 // STATE
@@ -43,7 +43,7 @@ io.on("connection", socket => {
         eliminated: 0,
         wordList: wordList(50),
         lobbyCountdown: 30000, // go longer if rooms are too small
-        lobbyTimer: 0,
+        roundTimer: 0,
         wordTime: 10000,
         started: false
       };
@@ -67,7 +67,7 @@ io.on("connection", socket => {
 
     // join lobby socket room
     socket.join(lobby.id, () => {
-      io.to(lobby.id).emit(lobby);
+      io.to(lobby.id).emit('update', lobby);
     });
   });
 
@@ -101,7 +101,7 @@ setInterval(() => {
         io.to(lobby.id).emit("start", lobby);
       }
 
-      lobby.lobbyTimer += DELTA;
+      lobby.roundTimer += DELTA;
 
       if (lobby.eliminated >= lobby.players.length - 1) {
         // lobby over
@@ -116,7 +116,7 @@ setInterval(() => {
       lobby.lobbyCountdown -= DELTA;
     }
 
-    io.to(lobby.id).emit(lobby);
+    io.to(lobby.id).emit('update', lobby);
   }
 }, DELTA);
 

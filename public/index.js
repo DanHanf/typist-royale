@@ -1,24 +1,6 @@
-var cursorIndex = 0; // cursor index effects the background color of the Letter To Be Typed !
-var wordLength = 0;
-
 $(function() {
   var socket = io();
-  var FADE_TIME = 150; //ms
-  var TYPING_TIMER_LENGTH = 400; //ms
-  var COLORS = [
-    "#e21400",
-    "#91580f",
-    "#f8a700",
-    "#f78b00",
-    "#58dc00",
-    "#287b00",
-    "#a8f07a",
-    "#4ae8c4",
-    "#3b88eb",
-    "#3824aa",
-    "#a700ff",
-    "#d300e7"
-  ];
+
   var eliminated;
 
   // Initialize Variables
@@ -37,7 +19,7 @@ $(function() {
 
   // click ready button
   $(".buttonReady").click(function() {
-    name = $(".nickname").val();
+    name = $(".username").val();
     $readyPage.fadeOut();
     $chatPage.show();
     $readyPage.off("click");
@@ -48,4 +30,14 @@ $(function() {
     $(".playerUsername").append("hello, " + name);
     socket.emit("join", { name: name });
   });
+
+  socket.on('update', (lobby) => {
+
+  })
 });
+
+/*
+- Client is listening for lobby updates from server
+- the Main Thing to be updated related to the lobby.players[]
+- So, our next thing to work on is updating the client with player list updates 
+*/
